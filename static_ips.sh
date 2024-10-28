@@ -2,16 +2,16 @@
 
 # Function to check for YAML files in /etc/netplan/
 check_yaml_files() {
-    echo "Checking for YAML files in /etc/netplan/..."
+    echo "Checking for YAML files in /etc/netplan..."
     yaml_files=("/etc/netplan/"*.yaml)
 
     if [ -e "${yaml_files[0]}" ]; then
-        echo "YAML files found in /etc/netplan/:"
+        echo "YAML files found in /etc/netplan:"
         ls "${yaml_files[@]}"
         echo "Using the first YAML file found: ${yaml_files[0]}"
         update_netplan "${yaml_files[0]}"
     else
-        echo "No YAML files found in /etc/netplan/."
+        echo "No YAML files found in /etc/netplan."
     fi
 }
 
@@ -38,9 +38,15 @@ update_netplan() {
     if ping -c 1 "$dns_server" &> /dev/null; then
         echo "DNS server $dns_server is reachable. Assigning as primary DNS."
         dns_config=("$dns_server" "8.8.8.8" "1.1.1.1")
+        echo "Connection details:"
+        echo "  DNS Server: $dns_server"
+        echo "  Status: Reachable"
     else
         echo "DNS server $dns_server is not reachable. Using fallback DNS servers."
         dns_config=("8.8.8.8" "1.1.1.1" "8.8.4.4")
+        echo "Connection details:"
+        echo "  DNS Server: $dns_server"
+        echo "  Status: Not Reachable"
     fi
 
     # Make a backup of the original YAML file (optional)
@@ -83,6 +89,15 @@ update_netplan() {
     # Check if the new YAML file was created successfully
     if [ $? -eq 0 ]; then
         echo "Netplan configuration updated successfully in $yaml_file."
+        
+        # Apply the netplan configuration
+        echo "Applying the netplan configuration..."
+        sudo netplan apply
+        if [ $? -eq 0 ]; then
+            echo "Netplan configuration applied successfully."
+        else
+            echo "Failed to apply netplan configuration."
+        fi
     else
         echo "Failed to create the new netplan configuration."
     fi

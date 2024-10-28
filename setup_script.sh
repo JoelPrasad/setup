@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of scripts to execute
-scripts=("lvm.sh" "update_upgrade.sh" "qemu_guest_agent.sh" "static_ips.sh" "clamAV.sh")
+scripts=("lvm.sh" "update_upgrade.sh" "qemu_guest_agent.sh" "clamAV.sh" "static_ips.sh")
 
 # Loop through each script
 for script in "${scripts[@]}"; do
