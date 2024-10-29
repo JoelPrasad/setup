@@ -7,15 +7,27 @@ scripts=("lvm.sh" "update_upgrade.sh" "qemu_guest_agent.sh" "clamAV.sh" "static_
 for script in "${scripts[@]}"; do
     # Change permissions to +x
     chmod +x "$script"
-    
-    # Execute the script
-    ./"$script"
-    
-    # Check if the previous command was successful
-    if [ $? -ne 0 ]; then
-        echo "Error executing $script. Exiting."
-        exit 1
+
+    if [ "$script" == "lvm.sh" ]; then
+        # Execute lvm.sh without stopping on failure
+        ./"$script"
+        if [ $? -ne 0 ]; then
+            echo "Warning: $script failed. Continuing to next script."
+        else
+            echo "$script executed successfully."
+        fi
+    else
+        # Execute other scripts with retry mechanism
+        while true; do
+            ./"$script"
+            if [ $? -eq 0 ]; then
+                echo "$script executed successfully."
+                break  # Exit the loop if the script succeeded
+            else
+                echo "Error executing $script. Retrying..."
+            fi
+        done
     fi
 done
 
-echo "All scripts executed successfully."
+echo "All scripts executed."
